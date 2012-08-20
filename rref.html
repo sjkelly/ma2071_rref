@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<h2>Stephen Kelly</h2>
+	<h3>MA2071 - E2012 - Sec. E02 </h3>
+	<h3>Project : Put a matrix into reduced row echelon form</h3>
+</head>
+<body>
+	<hr />
+	<table id="matrixInput" border="0">
+	<tr>
+		<td><textarea rows='1' cols='3' id='1_1'></textarea></td>
+		<td><textarea rows='1' cols='3' id='1_2'></textarea></td>
+	</tr>
+	<tr>
+		<td><textarea rows='1' cols='3' id='2_1'></textarea></td>
+		<td><textarea rows='1' cols='3' id='2_2'></textarea></td>
+	</tr>
+	</table>
+	<input type="button" onclick="addRow()" value="Add row">
+	<input type="button" onclick="addColumn()" value="Add column"> <br />
+	<input type="button" onclick="removeRow()" value="Remove row">
+	<input type="button" onclick="removeColumn()" value="Remove column">
+	<br />
+	<input type="button" onclick="rrefMatrix()" value="RREF">
+	<p id="errors"></p>
+	<p>Output : </p>
+	<table id="matrixOutput" border="1">
+	</table>
+	<p>About: <br /> 
+	Written for MA2071(Linear Algebra I) at WPI. 
+	<br />
+	<br />
+	Notes:
+	<br />
+	Mathematical expressions (such as fractions) should work.
+	</p>
+</body>
+<script type="text/javascript">
+//http://en.wikipedia.org/wiki/Rref#Pseudocode as template for implementation
+var rows = 2;
+var columns = 2;
+var addRow = function()
+{
+	var x=document.getElementById('matrixInput').insertRow(rows);
+	for(i=0; i < columns; i++){
+		var y=x.insertCell(0);
+		y.innerHTML="<textarea rows='1' cols='3' id='" + (rows+1) + "_" + (columns - i) +"'></textarea>";  
+		//^^ id='n_m'... where n = row, m = column 
+	}
+	rows++;
+}
+var addColumn = function(){
+	for(i=0; i < rows; i++){
+		var x=document.getElementById('matrixInput').rows[i];
+		var y=x.insertCell(columns);
+		y.innerHTML="<textarea rows='1' cols='3' id='" + (i+1) + "_" + (columns + 1) +"'></textarea>";
+	}
+	columns++;
+}	
+var removeRow = function(){
+	if (rows === 1) return;
+	document.getElementById('matrixInput').deleteRow(rows - 1);
+	rows--;
+}
+var removeColumn = function(){
+	if (columns === 1) return;
+	for(i=0; i < rows; i++){
+		var x=document.getElementById('matrixInput').rows[i];
+		var y=x.deleteCell(columns - 1);
+	}
+	columns--;
+}
+var rref = function(m) {
+    var lead = 0;
+    for (var r = 0; r < m.length; r++) {
+        if (m[0].length <= lead) {
+            return;
+        }
+        var i = r;
+        while (m[i][lead] == 0) {
+            i++;
+            if (m.length == i) {
+                i = r;
+                lead++;
+                if (m[0].length == lead) {
+                    return;
+                }
+            }
+        }
+ 	
+	//Swap rows , bring current working pivot to top.
+        var hold = m[i];
+        m[i] = m[r];
+        m[r] = hold;
+ 
+        var val = m[r][lead];
+        for (var j = 0; j < m[0].length; j++) {
+            m[r][j] /= val;
+        }
+ 
+        for (var i = 0; i < m.length; i++) {
+            if (i == r) continue;
+            val = m[i][lead];
+            for (var j = 0; j < m[0].length; j++) {
+                m[i][j] -= val * m[r][j];
+            }
+        }
+        lead++;
+    }
+    return m;
+}
+var initMatrix = function(){
+	var t = new Array(rows);
+	for (var i = 0; i < rows; i++) {
+		t[i] = new Array(columns);
+		for (var j = 0; j < columns; j++) {
+			t[i][j] = '';
+		}
+	}
+	return t;
+}
+function isAlpha(aChar)
+{
+	myCharCode = aChar.charCodeAt(0);
+
+	if(((myCharCode > 64) && (myCharCode <  91)) ||
+	((myCharCode > 96) && (myCharCode < 123)))
+	{
+		return true;
+	}
+	return false;
+} 
+var getMatrix = function(){
+	document.getElementById('errors').innerHTML = '';
+	var matrix = initMatrix();
+	for(var s = 0; s < rows; s++){
+		for(var j = 0; j < columns; j++){
+			e = document.getElementById((s+1)+"_"+(j+1)).value;
+			if(e=== '' || isAlpha(e)){
+				document.getElementById('errors').innerHTML = "Error: Non-numeric, or blank value(s) entered in matrix";
+				return;
+			}
+			matrix[s][j] = Number(eval(e));
+		}
+	}
+	return matrix;
+}
+var displayMatrix = function(m){
+	//delete previous table
+	document.getElementById('matrixOutput').innerHTML = '';
+	//fill table cells
+	for(i=0; i < rows; i++){
+		var x=document.getElementById('matrixOutput').insertRow(i);
+		for(j=0; j < columns; j++){
+			var y=x.insertCell(j);
+			y.innerHTML=m[i][j];
+		}
+	}
+	
+}
+var rrefMatrix = function(){
+	var m = getMatrix();
+	var out = rref(m);
+	displayMatrix(m);
+}
+</script>
+</html> 
+
